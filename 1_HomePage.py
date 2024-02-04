@@ -58,118 +58,115 @@ else:
     us_data = constant_params_us(us_data)
     us_data = us_data.drop_duplicates(subset=['Número de Identifiación del Usuario en el Sistema'])
 
-    st.warning('**Verifica!**, Usa la tabla de consultas del *mes pasado* antes de colocar el número de factura.', icon="⚠️")
-    text_input = st.text_input(label= "Ultimo Codigo de Factura",label_visibility="visible",disabled=False,placeholder="Ingresa la ultima factura",key="bill_code")
-    st.write(text_input)
+    st.warning('**Verifica!**, Usa la tabla de consultas (**AC.txt**) del *mes pasado* antes de colocar el número de factura.', icon="⚠️")
+    text_input = st.text_input(label= "Ultimo Codigo de Factura **Unicamente el Número Ej. 1354**",label_visibility="visible",disabled=False,placeholder="Ingresa la ultima factura",key="bill_code")
 
-    # if text_input:
-    #     #fill tabla ac
-    #     try:
-    #         bill_code = int(text_input)
-    #         st.info(f"Si la ultima factura Ingresada fue: **{text_input}**, Iniciarás apartir de: **OF{bill_code + 1}APSBS188**",icon="ℹ️")
-    #     except ValueError:
-    #         st.write("Ingresa un número válido.")
+    if text_input:
+        #fill tabla ac
+        try:
+            bill_code = int(text_input)
+            st.info(f"Si la ultima factura Ingresada fue: **{text_input}**, Iniciarás apartir de: **OF{bill_code + 1}APSBS188**",icon="ℹ️")
+        except ValueError:
+            st.write("Ingresa un número válido.")
 
-    #     ac_data = dataset.copy()
-    #     ac_data['Tipo de Identificación del Usuario'] = ac_data['TDOC']
-    #     ac_data['Número de identificación del usuario en el sistema'] = ac_data['CEDULA'].apply(lambda x:int(x))
-    #     ac_data['Código del Diagnóstico principal'] = ac_data['CIE10']
-    #     ac_data['Código del diagnóstico relacionado N° 1'] = ac_data['DX2']
-    #     ac_data['Fecha de la consulta'] = ac_data['FECHA']
-    #     ac_data = constant_params_ac(ac_data,bill_code)
+        ac_data = dataset.copy()
+        ac_data['Tipo de Identificación del Usuario'] = ac_data['TDOC']
+        ac_data['Número de identificación del usuario en el sistema'] = ac_data['CEDULA'].apply(lambda x:int(x))
+        ac_data['Código del Diagnóstico principal'] = ac_data['CIE10']
+        ac_data['Código del diagnóstico relacionado N° 1'] = ac_data['DX2']
+        ac_data['Fecha de la consulta'] = ac_data['FECHA']
+        ac_data = constant_params_ac(ac_data,bill_code)
         
-    #     #fill tabla ap
-    #     ap_data = dataset.copy()
-    #     ap_data['Tipo de Identificación del Usuario'] = ap_data['TDOC']
-    #     ap_data['Número de identificación del usuario en el sistema'] = ap_data['CEDULA'].apply(lambda x:int(x))
-    #     ap_data['Diagnóstico principal'] = ap_data['CIE10']
-    #     ap_data['Código del diagnóstico relacionado'] = ap_data['DX2']
-    #     ap_data['Fecha del procedimiento'] = ap_data['FECHA']
-    #     ap_data['Código del procedimiento'] = ap_data['CUPS']
-    #     ap_data['Forma de realización del acto quirúrgico'] = ap_data['CUPS'].apply(lambda x: '1' if str(x)[0]=='2' else '')
-    #     ap_data['Valor del Procedimiento'] = ap_data['PRECIO']
-    #     ap_data = constant_params_ap(ap_data,bill_code)
+        #fill tabla ap
+        ap_data = dataset.copy()
+        ap_data['Tipo de Identificación del Usuario'] = ap_data['TDOC']
+        ap_data['Número de identificación del usuario en el sistema'] = ap_data['CEDULA'].apply(lambda x:int(x))
+        ap_data['Diagnóstico principal'] = ap_data['CIE10']
+        ap_data['Código del diagnóstico relacionado'] = ap_data['DX2']
+        ap_data['Fecha del procedimiento'] = ap_data['FECHA']
+        ap_data['Código del procedimiento'] = ap_data['CUPS']
+        ap_data['Forma de realización del acto quirúrgico'] = ap_data['CUPS'].apply(lambda x: '1' if str(x)[0]=='2' else '')
+        ap_data['Valor del Procedimiento'] = ap_data['PRECIO']
+        ap_data = constant_params_ap(ap_data,bill_code)
         
-    #     to_reprice_bills = list(ap_data[ap_data['Diagnóstico principal'] == 'Z012']['Número de la factura'].values)
+        to_reprice_bills = list(ap_data[ap_data['Diagnóstico principal'] == 'Z012']['Número de la factura'].values)
 
-    #     #fill tabla af
-    #     af_data = dataset.copy()
-    #     #parametros constantes af
-    #     af_data['Código del Prestador'] = '110013660801'
-    #     af_data['Razón Social o Apellidos y nombres del prestador'] = 'ANGIE SOSA'
-    #     af_data['Tipo de Identificación'] = 'CC'
-    #     af_data['Número de Identificación'] = '1020830226'
-    #     af_data['Código entidad Administradora'] = 'SDS001'
-    #     af_data['Nombre entidad administradora'] = 'SECRETARIA DISTRITAL DE SALUD'
-    #     af_data['Número del Contrato'] = ''
-    #     af_data['Plan de Beneficios'] = ''
-    #     af_data['Número de la póliza'] = ''
-    #     af_data['Valor total del pago compartido COPAGO'] = '0'
-    #     af_data['Valor de la comisión'] = '0'
-    #     af_data['Valor total de Descuentos'] = '0'
-    #     af_data['Número de la factura'] = add_bill_identifier(af_data,bill_code)
-    #     af_data['Valor Neto a Pagar por la entidad Contratante'] = af_data.apply(lambda data: '0' if data['Número de la factura'] in to_reprice_bills else data['PRECIO'], axis=1)
-    #     af_data['Fecha de expedición de la factura'] = af_data['FECHA']
-    #     af_data['Fecha de Inicio'] = af_data['Fecha de expedición de la factura'].apply(lambda x: start_end_month(x)[0])
-    #     af_data['Fecha final'] = af_data['Fecha de expedición de la factura'].apply(lambda x: start_end_month(x)[1])
-    #     af_data = af_data[af_columns]
+        #fill tabla af
+        af_data = dataset.copy()
+        #parametros constantes af
+        af_data['Código del Prestador'] = '110013660801'
+        af_data['Razón Social o Apellidos y nombres del prestador'] = 'ANGIE SOSA'
+        af_data['Tipo de Identificación'] = 'CC'
+        af_data['Número de Identificación'] = '1020830226'
+        af_data['Código entidad Administradora'] = 'SDS001'
+        af_data['Nombre entidad administradora'] = 'SECRETARIA DISTRITAL DE SALUD'
+        af_data['Número del Contrato'] = ''
+        af_data['Plan de Beneficios'] = ''
+        af_data['Número de la póliza'] = ''
+        af_data['Valor total del pago compartido COPAGO'] = '0'
+        af_data['Valor de la comisión'] = '0'
+        af_data['Valor total de Descuentos'] = '0'
+        af_data['Número de la factura'] = add_bill_identifier(af_data,bill_code)
+        af_data['Valor Neto a Pagar por la entidad Contratante'] = af_data.apply(lambda data: '0' if data['Número de la factura'] in to_reprice_bills else data['PRECIO'], axis=1)
+        af_data['Fecha de expedición de la factura'] = af_data['FECHA']
+        af_data['Fecha de Inicio'] = af_data['Fecha de expedición de la factura'].apply(lambda x: start_end_month(x)[0])
+        af_data['Fecha final'] = af_data['Fecha de expedición de la factura'].apply(lambda x: start_end_month(x)[1])
+        af_data = af_data[af_columns]
 
         
-    #     #Eliminar Facturas de Procedimientos con Codigo Z012
-    #     ap_data = ap_data[ap_data['Diagnóstico principal'] != 'Z012']
+        #Eliminar Facturas de Procedimientos con Codigo Z012
+        ap_data = ap_data[ap_data['Diagnóstico principal'] != 'Z012']
 
-    #     bill = list(ac_data['Número de la factura'].values)[-1:]
-    #     bill = str(bill[-1:][0])
-    #     archivo = 'example/bill.txt'
+        bill = list(ac_data['Número de la factura'].values)[-1:]
+        bill = str(bill[-1:][0])
+        archivo = 'example/bill.txt'
 
-    #     with open(archivo, 'w') as file:
-    #         file.write(bill)
+        with open(archivo, 'w') as file:
+            file.write(bill)
 
-
-    #     st.write(us_data)
-    #     #download us
-    #     @st.cache_data 
-    #     def convert_df(df):
-    #         csv_without_header = df.to_csv(index=False, header=False).encode('utf-8')
-    #         return csv_without_header
+        st.write(us_data)
+        #download us
+        @st.cache_data 
+        def convert_df(df):
+            csv_without_header = df.to_csv(index=False, header=False).encode('utf-8')
+            return csv_without_header
         
+        csv_us = convert_df(us_data)
+        st.download_button(
+            label="Usuarios RIPS",
+            data=csv_us,
+            file_name='us.txt',
+            mime='text/csv',
+        )
 
-    #     csv_us = convert_df(us_data)
-    #     st.download_button(
-    #         label="Usuarios RIPS",
-    #         data=csv_us,
-    #         file_name='us.txt',
-    #         mime='text/csv',
-    #     )
+        st.write(ac_data)
+        #download us
+        csv_ac = convert_df(ac_data)
+        st.download_button(
+            label="Consultas RIPS",
+            data=csv_ac,
+            file_name='ac.txt',
+            mime='text/csv',
+        )
 
-    #     st.write(ac_data)
-    #     #download us
-    #     csv_ac = convert_df(ac_data)
-    #     st.download_button(
-    #         label="Consultas RIPS",
-    #         data=csv_ac,
-    #         file_name='ac.txt',
-    #         mime='text/csv',
-    #     )
-
-    #     st.write(ap_data)
-    #     #download ap
-    #     csv_ap = convert_df(ap_data)
-    #     st.download_button(
-    #         label="Procedimientos RIPS",
-    #         data=csv_ap,
-    #         file_name='ap.txt',
-    #         mime='text/csv',
-    #     )
+        st.write(ap_data)
+        #download ap
+        csv_ap = convert_df(ap_data)
+        st.download_button(
+            label="Procedimientos RIPS",
+            data=csv_ap,
+            file_name='ap.txt',
+            mime='text/csv',
+        )
 
 
-    #     st.write(af_data)
-    #     #download af
-    #     csv_af = convert_df(af_data)
-    #     st.download_button(
-    #         label="Facturas RIPS",
-    #         data=csv_af,
-    #         file_name='af.txt',
-    #         mime='text/csv',
-    #     )
+        st.write(af_data)
+        #download af
+        csv_af = convert_df(af_data)
+        st.download_button(
+            label="Facturas RIPS",
+            data=csv_af,
+            file_name='af.txt',
+            mime='text/csv',
+        )
         
